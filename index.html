@@ -731,7 +731,12 @@
         url: "https://ryosukeucchi0112-boop.github.io/suzuki-chat/",
         snippet: "朝倉澪とSUZUKIのやり取りが断片的に残されたチャットログ。04.17以前の記録として、澪が何を調べ、誰に助けを求めていたのかを辿る手がかりになる。",
         label: "restricted cache",
-        keywords:"https://ryosukeucchi0112-boop.github.io/suzuki-chat/"
+        keywords: [
+    "https://ryosukeucchi0112-boop.github.io/suzuki-chat/",
+    "ryosukeucchi0112-boop.github.io/suzuki-chat/",
+    "suzuki-chat/"
+  ],
+        directOnly: true
       }
     ];
 
@@ -951,19 +956,48 @@
       window.history.replaceState({}, "", url);
     }
 
-    function performSearch(query, options = {}) {
-      const rawQuery = String(query || "").trim();
-      if (!rawQuery) {
-        output.innerHTML = "";
-        document.body.classList.remove("has-results");
-        updateQueryParameter("");
-        return;
-      }
+   function performSearch(query, options = {}) {
+  const rawQuery = String(query || "").trim();
+  if (!rawQuery) {
+    output.innerHTML = "";
+    document.body.classList.remove("has-results");
+    updateQueryParameter("");
+    return;
+  }
 
-      searchInput.value = rawQuery;
-      setResultMode(rawQuery);
-      showLoading();
+  searchInput.value = rawQuery;
+  setResultMode(rawQuery);
+  showLoading();
 
+  // suzuki-chat はURL完全一致の時だけ検索結果に出す
+  const normalizedQuery = rawQuery.toLowerCase();
+  const directMatch = SEARCH_INDEX.find(item => {
+    if (!item.directOnly) return false;
+
+    const url = item.url.toLowerCase();
+    const urlNoProtocol = url.replace("https://", "");
+    const urlNoSlash = url.replace(/\/$/, "");
+    const urlNoProtocolNoSlash = urlNoProtocol.replace(/\/$/, "");
+
+    return (
+      normalizedQuery === url ||
+      normalizedQuery === urlNoProtocol ||
+      normalizedQuery === urlNoSlash ||
+      normalizedQuery === urlNoProtocolNoSlash
+    );
+  });
+
+  if (directMatch) {
+    if (options.updateUrl !== false) {
+      updateQueryParameter(rawQuery);
+    }
+
+    window.setTimeout(() => {
+      renderResults([directMatch]);
+    }, 900);
+
+    return;
+  }
       if (options.updateUrl !== false) {
         updateQueryParameter(rawQuery);
       }
