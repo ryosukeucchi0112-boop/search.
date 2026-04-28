@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TEMPORAL SEARCH</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --panel-soft: #f1f5f9;
+      --text: #111827;
+      --muted: #6b7280;
+      --muted-2: #94a3b8;
+      --line: #d9e2ec;
+      --accent: #416783;
+      --accent-dark: #24465f;
+      --accent-soft: #e8f0f6;
+      --danger-soft: #f3f4f6;
+      --shadow: 0 18px 55px rgba(31, 41, 55, 0.10);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(95, 130, 160, 0.18), transparent 34rem),
+        linear-gradient(180deg, #ffffff 0%, var(--bg) 58%, #edf2f7 100%);
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      font-family: var(--sans);
+      letter-spacing: 0.01em;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(36, 70, 95, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(36, 70, 95, 0.035) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), transparent 68%);
+      z-index: 0;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 12px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(65, 103, 131, 0.35);
+      border-radius: 10px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(232, 240, 246, 0.95)),
+        repeating-linear-gradient(90deg, transparent 0 6px, rgba(65, 103, 131, 0.08) 6px 7px);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.85), 0 10px 22px rgba(65, 103, 131, 0.14);
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border: 1px solid rgba(65, 103, 131, 0.45);
+      border-radius: 50%;
+    }
+
+    .brand-title {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.11em;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      margin-top: 4px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .status {
+      text-align: right;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.65;
+      white-space: nowrap;
+    }
+
+    .status strong {
+      display: block;
+      color: var(--accent-dark);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    main {
+      flex: 1;
+      width: 100%;
+    }
+
+    .hero {
+      width: min(920px, calc(100% - 32px));
+      margin: 68px auto 28px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      transition: all 0.25s ease;
+    }
+
+    body.has-results .hero {
+      margin: 12px auto 18px;
+      text-align: left;
+      place-items: stretch;
+    }
+
+    .hero-title {
+      margin: 0;
+      font-family: var(--mono);
+      font-size: clamp(39px, 8vw, 78px);
+      line-height: 0.96;
+      letter-spacing: -0.06em;
+      color: #162435;
+      text-shadow: 0 1px 0 #fff;
+    }
+
+    body.has-results .hero-title {
+      display: none;
+    }
+
+    .hero-copy {
+      margin: 17px auto 24px;
+      max-width: 680px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.85;
+    }
+
+    body.has-results .hero-copy {
+      display: none;
+    }
+
+    .search-card {
+      width: min(780px, 100%);
+      padding: 16px;
+      border: 1px solid rgba(160, 174, 192, 0.38);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    body.has-results .search-card {
+      width: 100%;
+      padding: 10px;
+      border-radius: 18px;
+      box-shadow: 0 12px 35px rgba(31, 41, 55, 0.08);
+    }
+
+    .search-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .search-box-wrap {
+      position: relative;
+    }
+
+    .search-box-wrap::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      width: 15px;
+      height: 15px;
+      border: 2px solid #71869a;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      opacity: 0.75;
+    }
+
+    .search-box-wrap::after {
+      content: "";
+      position: absolute;
+      left: 31px;
+      top: 55%;
+      width: 8px;
+      height: 2px;
+      background: #71869a;
+      transform: rotate(45deg);
+      transform-origin: left center;
+      opacity: 0.75;
+    }
+
+    input[type="search"] {
+      width: 100%;
+      height: 58px;
+      padding: 0 18px 0 48px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: #fff;
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    body.has-results input[type="search"] {
+      height: 50px;
+      border-radius: 14px;
+    }
+
+    input[type="search"]:focus {
+      border-color: rgba(65, 103, 131, 0.62);
+      box-shadow: 0 0 0 4px rgba(65, 103, 131, 0.12);
+    }
+
+    input[type="search"]::placeholder {
+      color: #98a6b3;
+    }
+
+    .search-button {
+      height: 58px;
+      padding: 0 22px;
+      border: 0;
+      border-radius: 17px;
+      background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      box-shadow: 0 12px 24px rgba(36, 70, 95, 0.20);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+      white-space: nowrap;
+    }
+
+    body.has-results .search-button {
+      height: 50px;
+      border-radius: 14px;
+      padding-inline: 18px;
+    }
+
+    .search-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+      box-shadow: 0 16px 30px rgba(36, 70, 95, 0.24);
+    }
+
+    .search-button:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 18px rgba(36, 70, 95, 0.18);
+    }
+
+    .examples {
+      width: min(780px, 100%);
+      margin: 20px auto 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      transition: opacity 0.2s ease;
+    }
+
+    body.has-results .examples {
+      display: none;
+    }
+
+    .examples-label {
+      margin-bottom: 9px;
+      font-family: var(--mono);
+      color: var(--muted-2);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+    }
+
+    .example-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .example-button {
+      border: 1px solid rgba(148, 163, 184, 0.42);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.62);
+      color: #526579;
+      padding: 7px 11px;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .example-button:hover {
+      background: #fff;
+      border-color: rgba(65, 103, 131, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .result-area {
+      display: none;
+      width: min(920px, calc(100% - 32px));
+      margin: 0 auto 42px;
+    }
+
+    body.has-results .result-area {
+      display: block;
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 8px 4px 18px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .query-readout {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pulse {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #526579;
+    }
+
+    .pulse::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #6b8aa3;
+      box-shadow: 0 0 0 0 rgba(65, 103, 131, 0.32);
+      animation: pulse 1.35s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(65, 103, 131, 0.32); }
+      70% { box-shadow: 0 0 0 8px rgba(65, 103, 131, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(65, 103, 131, 0); }
+    }
+
+    .loading-panel,
+    .empty-panel {
+      border: 1px solid rgba(160, 174, 192, 0.36);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 16px 38px rgba(31, 41, 55, 0.08);
+      padding: 22px;
+    }
+
+    .loading-lines {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-family: var(--mono);
+      color: #51687c;
+      font-size: 13px;
+      line-height: 2;
+    }
+
+    .loading-lines li {
+      opacity: 0.35;
+    }
+
+    .loading-lines li.active {
+      opacity: 1;
+    }
+
+    .loading-lines li.active::before {
+      content: ">";
+      margin-right: 8px;
+      color: var(--accent);
+    }
+
+    .result-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .result-item {
+      display: block;
+      padding: 20px 22px;
+      border: 1px solid rgba(160, 174, 192, 0.34);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.86);
+      text-decoration: none;
+      box-shadow: 0 12px 32px rgba(31, 41, 55, 0.06);
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .result-item:hover {
+      transform: translateY(-2px);
+      border-color: rgba(65, 103, 131, 0.40);
+      background: #fff;
+      box-shadow: 0 18px 42px rgba(31, 41, 55, 0.10);
+    }
+
+    .result-title {
+      margin: 0 0 6px;
+      color: #162435;
+      font-size: 19px;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .result-url {
+      margin: 0 0 10px;
+      color: #4b6f88;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.6;
+      word-break: break-all;
+    }
+
+    .result-snippet {
+      margin: 0;
+      color: #4b5563;
+      font-size: 14px;
+      line-height: 1.85;
+    }
+
+    .result-label {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 14px;
+      padding: 4px 8px;
+      border: 1px solid rgba(65, 103, 131, 0.20);
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #47667b;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.07em;
+      text-transform: lowercase;
+    }
+
+    .empty-title {
+      margin: 0 0 8px;
+      font-family: var(--mono);
+      font-size: 17px;
+      color: #162435;
+      letter-spacing: -0.02em;
+    }
+
+    .empty-text {
+      margin: 0;
+      color: #536273;
+      font-size: 14px;
+      line-height: 1.9;
+    }
+
+    .empty-panel.blocked {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.94), rgba(247,249,252,0.90)),
+        repeating-linear-gradient(135deg, transparent 0 12px, rgba(65, 103, 131, 0.035) 12px 13px);
+    }
+
+    .footer {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 26px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        width: min(100% - 24px, 1180px);
+        padding-top: 16px;
+      }
+
+      .brand-mark {
+        width: 31px;
+        height: 31px;
+      }
+
+      .brand-title {
+        font-size: 13px;
+      }
+
+      .brand-sub,
+      .status {
+        font-size: 10px;
+      }
+
+      .hero {
+        width: min(100% - 22px, 920px);
+        margin-top: 48px;
+      }
+
+      .hero-copy {
+        font-size: 13px;
+        margin-bottom: 18px;
+      }
+
+      .search-card {
+        padding: 10px;
+        border-radius: 20px;
+      }
+
+      .search-form {
+        grid-template-columns: 1fr;
+      }
+
+      input[type="search"],
+      body.has-results input[type="search"] {
+        height: 52px;
+        font-size: 16px;
+      }
+
+      .search-button,
+      body.has-results .search-button {
+        height: 50px;
+        width: 100%;
+      }
+
+      .examples {
+        width: min(100% - 22px, 780px);
+      }
+
+      .example-list {
+        justify-content: flex-start;
+      }
+
+      .result-area {
+        width: min(100% - 22px, 920px);
+      }
+
+      .meta-row {
+        align-items: flex-start;
+        flex-direction: column;
+        font-size: 11px;
+      }
+
+      .result-item {
+        padding: 17px 16px;
+        border-radius: 16px;
+      }
+
+      .result-title {
+        font-size: 17px;
+      }
+
+      .result-snippet {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a href="./" class="brand" aria-label="TEMPORAL SEARCH">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>
+          <span class="brand-title">TEMPORAL SEARCH</span>
+          <span class="brand-sub">Indexed web layer: 2026.04.17</span>
+        </span>
+      </a>
+      <div class="status" aria-label="connection status">
+        <strong>04.17 / read-only</strong>
+        connected by SUZUKI
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-label="search">
+        <h1 class="hero-title">TEMPORAL<br />SEARCH</h1>
+        <p class="hero-copy">
+          2026年4月17日時点の公開Web領域だけを参照しています。<br />
+          病院名、人物名、学校名、記事タイトルを入力してください。
+        </p>
+
+        <div class="search-card">
+          <form class="search-form" id="searchForm" autocomplete="off">
+            <div class="search-box-wrap">
+              <input
+                id="searchInput"
+                type="search"
+                placeholder="病院名、人物名、学校名、記事タイトルを入力"
+                aria-label="検索語"
+                enterkeyhint="search"
+              />
+            </div>
+            <button class="search-button" type="submit">SEARCH 04.17</button>
+          </form>
+        </div>
+
+        <div class="examples" aria-label="検索例">
+          <div class="examples-label">SUGGESTED PUBLIC QUERIES</div>
+          <ul class="example-list">
+            <li><button class="example-button" type="button" data-query="城南記念総合病院">城南記念総合病院</button></li>
+            <li><button class="example-button" type="button" data-query="黒崎恒一郎">黒崎恒一郎</button></li>
+            <li><button class="example-button" type="button" data-query="城南市 有名人">城南市 有名人</button></li>
+            <li><button class="example-button" type="button" data-query="私立星浜学園高等部">私立星浜学園高等部</button></li>
+            <li><button class="example-button" type="button" data-query="三浦新聞">三浦新聞</button></li>
+            <li><button class="example-button" type="button" data-query="朝倉澪">朝倉澪</button></li>
+            <li><button class="example-button" type="button" data-query="成瀬栞">成瀬栞</button></li>
+            <li><button class="example-button" type="button" data-query="黒崎蓮司">黒崎蓮司</button></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="result-area" id="resultArea" aria-live="polite">
+        <div class="meta-row">
+          <div class="query-readout" id="queryReadout">query: —</div>
+          <div class="pulse" id="indexStatus">public index standby</div>
+        </div>
+        <div id="output"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      This page is part of a fictional ARG.
+    </footer>
+  </div>
+
+  <script>
+    const SEARCH_INDEX = [
+      {
+        title: "城南記念総合病院",
+        url: "https://ryosukeucchi0112-boop.github.io/bordover-jonan.hospital/",
+        snippet: "浜松市中央区に位置する地域密着型の総合病院。院長は黒崎恒一郎。外科部長・藍沢晋作とともに開院したとされる。お知らせ欄には過去診療記録の整理や一部カルテの閲覧制限に関する案内が掲載されている。",
+        label: "public index",
+        keywords: "城南記念総合病院, 城南病院, 病院, 総合病院, 黒崎恒一郎, 黒崎, 院長, 藍沢晋作, 藍沢, 外科, 外科部長, カルテ, 診療記録, 過去診療記録, 閲覧制限, 浜松市, 城南"
+      },
+      {
+        title: "城南市の有名人特集 第1弾｜黒崎恒一郎",
+        url: "https://ryosukeucchi0112-boop.github.io/Jonan-famous-person/",
+        snippet: "地域医療と教育の二つの分野で城南市を支える人物として、黒崎恒一郎を紹介する特集記事。城南記念総合病院の院長であり、私立星浜学園の理事長でもあることが記されている。",
+        label: "cached",
+        keywords: "黒崎恒一郎, くろさきこういちろう, 黒崎, 城南市, 有名人, 人物紹介, 城南市の有名人, 城南まちだより, 城南記念総合病院, 院長, 私立星浜学園, 星浜学園, 理事長, 医療, 教育"
+      },
+      {
+        title: "星浜学園高等部",
+        url: "https://ryosukeucchi0112-boop.github.io/bordover-hoshihama.highschool/",
+        snippet: "1898年創立の私立高校。学校からのお知らせには「朝倉さんの転落事故について」「三浦新聞への対応について」などが掲載されている。理事長・黒崎恒一郎との関係を調べる導線になる。",
+        label: "public index",
+        keywords: "星浜学園, 星浜学園高等部, 私立星浜学園, 私立星浜学園高等部, 学校, 高校, 朝倉, 朝倉さん, 転落事故, 三浦新聞, 黒崎恒一郎, 理事長, Eclipse first, since 1898"
+      },
+      {
+        title: "三浦新聞｜地域のニュース",
+        url: "https://ryosukeucchi0112-boop.github.io/miura.news/",
+        snippet: "地域の出来事を伝える地方ニュースサイト。私立星浜学園の女子生徒転落、成瀬栞の死亡事故、黒崎蓮司の甲子園出場など、事件に関係する複数の記事が掲載されている。",
+        label: "archived",
+        keywords: "三浦新聞, 三浦, ニュース, 地域ニュース, 三浦さやか, 星浜学園, 城南記念総合病院, 朝倉澪, 成瀬栞, 黒崎蓮司, 転落, 点滴, 容体急変, 医療, 学校, 事件"
+      },
+      {
+        title: "私立星浜学園の女子生徒が校内で転落、病院に搬送、未だ意識戻らず",
+        url: "https://ryosukeucchi0112-boop.github.io/news-article-mio/index.html",
+        snippet: "2026年4月10日、私立星浜学園高等部の女子生徒が校内の階段付近で倒れているのが見つかり、城南記念総合病院へ搬送された。搬送後も意識は戻っていないと報じられている。",
+        label: "temporal result",
+        keywords: "朝倉澪, 澪, 朝倉, 私立星浜学園, 星浜学園, 女子生徒, 転落, 階段, 校内, 病院搬送, 意識戻らず, 城南記念総合病院, いじめ, 三浦さやか, 2026年4月10日"
+      },
+      {
+        title: "女子高校生死亡、点滴後に容体急変　病院対応に疑問",
+        url: "https://ryosukeucchi0112-boop.github.io/news-article-naruse/",
+        snippet: "2026年1月18日、私立星浜学園高等部に通っていた女子高校生・成瀬栞が、城南記念総合病院で点滴などの処置を受けた後に容体を急変させ死亡した件を報じる記事。",
+        label: "temporal result",
+        keywords: "成瀬栞, 栞, 女子高校生死亡, 点滴, 容体急変, 病院対応, 城南記念総合病院, 私立星浜学園, 星浜学園, 医療, 三浦さやか, 2026年1月18日, 急変, 死亡事故"
+      },
+      {
+        title: "私立星浜学園、16年ぶり甲子園出場　主将・黒崎蓮司「支えてくれた人たちに感謝」",
+        url: "https://ryosukeucchi0112-boop.github.io/news-article-renji/",
+        snippet: "私立星浜学園高等部が春季県大会を制し、16年ぶりの甲子園出場を決めたことを伝える記事。主将として黒崎蓮司の名前が掲載されている。",
+        label: "cached",
+        keywords: "黒崎蓮司, 蓮司, 黒崎, 私立星浜学園, 星浜学園, 甲子園, 主将, 野球部, 春季県大会, 学校, 三浦新聞, 三浦さやか"
+      },
+      {
+        title: "朝倉澪の日常｜朝倉澪の個人ブログ",
+        url: "https://ryosukeucchi0112-boop.github.io/mio-blog/",
+        snippet: "星浜学園に通う朝倉澪が書いていた個人ブログ。何気ない日常と、そのとき考えていたことの記録として残されている。事件の感情面と手がかりを辿る重要なページ。",
+        label: "public index",
+        keywords: "朝倉澪, 澪, 朝倉, 朝倉澪の日常, 個人ブログ, ブログ, 星浜学園, 日常, 記録, メモ, 三ノ瀬山, 成瀬栞, 栞, 学校, いじめ"
+      }
+    ];
+
+    const BANNED_TERMS = [
+      "suzuki",
+      "suzuki-chat",
+      "suzuki-chat-archive",
+      "通報",
+      "野上",
+      "裏サイト",
+      "証拠",
+      "司令書",
+      "口封じ",
+      "アーカイブ",
+      "archive",
+      "restricted",
+      "evidence",
+      "police",
+      "report",
+      "complete",
+      "nogami-form"
+    ];
+
+    const EXCLUDED_URL_PARTS = [
+      "suzuki-chat",
+      "suzuki-chat-archive",
+      "bordover.netlify.app",
+      "nogami-form",
+      "report",
+      "police",
+      "complete",
+      "restricted",
+      "evidence"
+    ];
+
+    const $ = (selector) => document.querySelector(selector);
+    const searchForm = $("#searchForm");
+    const searchInput = $("#searchInput");
+    const output = $("#output");
+    const queryReadout = $("#queryReadout");
+    const indexStatus = $("#indexStatus");
+
+    function normalizeText(value) {
+      return String(value || "")
+        .normalize("NFKC")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function tokenize(query) {
+      return normalizeText(query)
+        .split(/[\s　]+/)
+        .map((token) => token.trim())
+        .filter(Boolean);
+    }
+
+    function includesBannedTerm(query) {
+      const normalizedQuery = normalizeText(query);
+      if (!normalizedQuery) return false;
+      return BANNED_TERMS.some((term) => normalizedQuery.includes(normalizeText(term)));
+    }
+
+    function isSafeUrl(url) {
+      const normalizedUrl = normalizeText(url);
+      return !EXCLUDED_URL_PARTS.some((part) => normalizedUrl.includes(normalizeText(part)));
+    }
+
+    function createHaystack(item) {
+      return normalizeText([
+        item.title,
+        item.url,
+        item.snippet,
+        item.keywords
+      ].join(" "));
+    }
+
+    function scoreItem(item, tokens, originalQuery) {
+      const title = normalizeText(item.title);
+      const snippet = normalizeText(item.snippet);
+      const keywords = normalizeText(item.keywords);
+      const url = normalizeText(item.url);
+      const haystack = createHaystack(item);
+      const normalizedQuery = normalizeText(originalQuery);
+
+      let matchedCount = 0;
+      let score = 0;
+
+      for (const token of tokens) {
+        if (haystack.includes(token)) {
+          matchedCount += 1;
+          score += 10;
+        }
+
+        if (title.includes(token)) score += 32;
+        if (keywords.includes(token)) score += 24;
+        if (snippet.includes(token)) score += 12;
+        if (url.includes(token)) score += 8;
+      }
+
+      if (title === normalizedQuery) score += 70;
+      if (keywords.split(",").map((v) => normalizeText(v)).includes(normalizedQuery)) score += 60;
+      if (title.includes(normalizedQuery)) score += 40;
+      if (keywords.includes(normalizedQuery)) score += 32;
+
+      const allMatched = tokens.length > 0 && matchedCount === tokens.length;
+      if (allMatched) score += 100;
+      else if (matchedCount > 0) score += matchedCount * 8;
+
+      return { score, matchedCount, allMatched };
+    }
+
+    function searchIndex(query) {
+      const tokens = tokenize(query);
+      if (!tokens.length) return [];
+
+      return SEARCH_INDEX
+        .filter((item) => isSafeUrl(item.url))
+        .map((item) => {
+          const score = scoreItem(item, tokens, query);
+          return { ...item, ...score };
+        })
+        .filter((item) => item.matchedCount > 0)
+        .sort((a, b) => {
+          if (b.allMatched !== a.allMatched) return Number(b.allMatched) - Number(a.allMatched);
+          if (b.score !== a.score) return b.score - a.score;
+          return a.title.localeCompare(b.title, "ja");
+        })
+        .slice(0, 8);
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function setResultMode(query) {
+      document.body.classList.add("has-results");
+      queryReadout.textContent = `query: ${query || "—"}`;
+      indexStatus.textContent = "public index active";
+    }
+
+    function showLoading() {
+      output.innerHTML = `
+        <div class="loading-panel">
+          <ul class="loading-lines" aria-label="search progress">
+            <li id="loadLine1">connecting to 04.17...</li>
+            <li id="loadLine2">restoring cached index...</li>
+            <li id="loadLine3">filtering public records...</li>
+          </ul>
+        </div>
+      `;
+
+      const lines = [$("#loadLine1"), $("#loadLine2"), $("#loadLine3")];
+      lines.forEach((line) => line.classList.remove("active"));
+      lines[0].classList.add("active");
+
+      window.setTimeout(() => {
+        lines[0].classList.remove("active");
+        lines[1].classList.add("active");
+      }, 280);
+
+      window.setTimeout(() => {
+        lines[1].classList.remove("active");
+        lines[2].classList.add("active");
+      }, 570);
+    }
+
+    function renderBlocked() {
+      output.innerHTML = `
+        <div class="empty-panel blocked">
+          <h2 class="empty-title">No indexed result found.</h2>
+          <p class="empty-text">
+            04.17時点の公開Web領域に一致する記録はありません。<br />
+            一部の記録は検索インデックスから除外されています。
+          </p>
+        </div>
+      `;
+      indexStatus.textContent = "filtered records hidden";
+    }
+
+    function renderEmpty() {
+      output.innerHTML = `
+        <div class="empty-panel">
+          <h2 class="empty-title">No indexed result found.</h2>
+          <p class="empty-text">
+            04.17時点の公開Web領域に一致する記録はありません。<br />
+            検索語を変えてください：病院名 / 人物名 / 学校名 / 記事タイトル
+          </p>
+        </div>
+      `;
+      indexStatus.textContent = "no public result";
+    }
+
+    function renderResults(results) {
+      const html = results.map((item) => `
+        <a class="result-item" href="${escapeHtml(item.url)}" target="_self" rel="noopener">
+          <h2 class="result-title">${escapeHtml(item.title)}</h2>
+          <p class="result-url">${escapeHtml(item.url)}</p>
+          <p class="result-snippet">${escapeHtml(item.snippet)}</p>
+          <span class="result-label">${escapeHtml(item.label)}</span>
+        </a>
+      `).join("");
+
+      output.innerHTML = `<div class="result-list">${html}</div>`;
+      indexStatus.textContent = `${results.length} indexed result${results.length === 1 ? "" : "s"}`;
+    }
+
+    function updateQueryParameter(query) {
+      const url = new URL(window.location.href);
+      if (query) {
+        url.searchParams.set("q", query);
+      } else {
+        url.searchParams.delete("q");
+      }
+      window.history.replaceState({}, "", url);
+    }
+
+    function performSearch(query, options = {}) {
+      const rawQuery = String(query || "").trim();
+      if (!rawQuery) {
+        output.innerHTML = "";
+        document.body.classList.remove("has-results");
+        updateQueryParameter("");
+        return;
+      }
+
+      searchInput.value = rawQuery;
+      setResultMode(rawQuery);
+      showLoading();
+
+      if (options.updateUrl !== false) {
+        updateQueryParameter(rawQuery);
+      }
+
+      window.setTimeout(() => {
+        if (includesBannedTerm(rawQuery)) {
+          renderBlocked();
+          return;
+        }
+
+        const results = searchIndex(rawQuery);
+        if (!results.length) {
+          renderEmpty();
+          return;
+        }
+
+        renderResults(results);
+      }, 920);
+    }
+
+    searchForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      performSearch(searchInput.value);
+    });
+
+    document.querySelectorAll(".example-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        performSearch(button.dataset.query || "");
+      });
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get("q");
+      if (query) {
+        performSearch(query, { updateUrl: false });
+      }
+    });
+  </script>
+</body>
+</html>
