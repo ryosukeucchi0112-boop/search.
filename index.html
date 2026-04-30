@@ -719,13 +719,14 @@
         label: "cached",
         keywords: "黒崎蓮司, 蓮司, 黒崎, 私立星浜学園, 星浜学園, 甲子園, 主将, 野球部, 春季県大会, 学校, 三浦新聞, 三浦さやか"
       },
-      {
-        title: "朝倉澪の日常｜朝倉澪の個人ブログ",
-        url: "https://ryosukeucchi0112-boop.github.io/mio-blog/",
-        snippet: "星浜学園に通う朝倉澪が書いていた個人ブログ。何気ない日常と、そのとき考えていたことの記録として残されている。事件の感情面と手がかりを辿る重要なページ。",
-        label: "public index",
-        keywords: "朝倉澪, 澪, 朝倉, 朝倉澪の日常, 個人ブログ, ブログ, 星浜学園, 日常, 記録, メモ, 三ノ瀬山, 成瀬栞, 栞, 学校, いじめ"
-      },
+     {
+  title: "朝倉澪の日常｜朝倉澪の個人ブログ",
+  url: "https://ryosukeucchi0112-boop.github.io/mio-blog/",
+  snippet: "星浜学園に通う朝倉澪が書いていた個人ブログ。何気ない日常と、そのとき考えていたことの記録として残されている。事件の感情面と手がかりを辿る重要なページ。",
+  label: "public index",
+  keywords: "朝倉澪",
+  exactQueryOnly: ["朝倉澪"]
+},
       {
         title: "SUZUKI CHAT",
         url: "https://ryosukeucchi0112-boop.github.io/suzuki-chat/",
@@ -846,24 +847,34 @@
       return { score, matchedCount, allMatched };
     }
 
-    function searchIndex(query) {
-      const tokens = tokenize(query);
-      if (!tokens.length) return [];
+   function searchIndex(query) {
+  const tokens = tokenize(query);
+  if (!tokens.length) return [];
 
-      return SEARCH_INDEX
-        .filter((item) => isSafeUrl(item.url))
-        .map((item) => {
-          const score = scoreItem(item, tokens, query);
-          return { ...item, ...score };
-        })
-        .filter((item) => item.matchedCount > 0)
-        .sort((a, b) => {
-          if (b.allMatched !== a.allMatched) return Number(b.allMatched) - Number(a.allMatched);
-          if (b.score !== a.score) return b.score - a.score;
-          return a.title.localeCompare(b.title, "ja");
-        })
-        .slice(0, 8);
-    }
+  const normalizedQuery = normalizeText(query);
+
+  return SEARCH_INDEX
+    .filter((item) => isSafeUrl(item.url))
+    .filter((item) => {
+      // exactQueryOnly があるページは、指定語句と完全一致した時だけ検索対象にする
+      if (!item.exactQueryOnly) return true;
+
+      return item.exactQueryOnly
+        .map((word) => normalizeText(word))
+        .includes(normalizedQuery);
+    })
+    .map((item) => {
+      const score = scoreItem(item, tokens, query);
+      return { ...item, ...score };
+    })
+    .filter((item) => item.matchedCount > 0)
+    .sort((a, b) => {
+      if (b.allMatched !== a.allMatched) return Number(b.allMatched) - Number(a.allMatched);
+      if (b.score !== a.score) return b.score - a.score;
+      return a.title.localeCompare(b.title, "ja");
+    })
+    .slice(0, 8);
+}
 
     function escapeHtml(value) {
       return String(value || "")
