@@ -6,17 +6,20 @@
   <title>TEMPORAL SEARCH</title>
   <style>
     :root {
-      --bg: #f6f8fb;
+      --fiction-header-height: 34px;
+      --bg: #f4f6f8;
       --panel: #ffffff;
-      --panel-soft: #f1f5f9;
+      --panel-soft: #eef3f7;
       --text: #111827;
       --muted: #6b7280;
       --muted-2: #94a3b8;
-      --line: #d9e2ec;
+      --line: #d7e0ea;
       --accent: #416783;
       --accent-dark: #24465f;
-      --accent-soft: #e8f0f6;
-      --danger-soft: #f3f4f6;
+      --accent-soft: #e7eff5;
+      --warning: #7a1f1f;
+      --warning-bg: #f8eeee;
+      --warning-line: #e8caca;
       --shadow: 0 18px 55px rgba(31, 41, 55, 0.10);
       --radius: 18px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -30,8 +33,9 @@
     html {
       min-height: 100%;
       background:
-        radial-gradient(circle at top left, rgba(95, 130, 160, 0.18), transparent 34rem),
-        linear-gradient(180deg, #ffffff 0%, var(--bg) 58%, #edf2f7 100%);
+        radial-gradient(circle at 10% 0%, rgba(95, 130, 160, 0.18), transparent 34rem),
+        radial-gradient(circle at 92% 12%, rgba(36, 70, 95, 0.10), transparent 28rem),
+        linear-gradient(180deg, #ffffff 0%, var(--bg) 58%, #e9eef4 100%);
     }
 
     body {
@@ -40,6 +44,7 @@
       color: var(--text);
       font-family: var(--sans);
       letter-spacing: 0.01em;
+      padding-top: var(--fiction-header-height);
     }
 
     body::before {
@@ -48,10 +53,10 @@
       inset: 0;
       pointer-events: none;
       background-image:
-        linear-gradient(rgba(36, 70, 95, 0.04) 1px, transparent 1px),
+        linear-gradient(rgba(36, 70, 95, 0.045) 1px, transparent 1px),
         linear-gradient(90deg, rgba(36, 70, 95, 0.035) 1px, transparent 1px);
       background-size: 38px 38px;
-      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), transparent 68%);
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent 68%);
       z-index: 0;
     }
 
@@ -59,10 +64,31 @@
       color: inherit;
     }
 
+    .fiction-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      width: 100%;
+      min-height: var(--fiction-header-height);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 14px;
+      background: rgba(62, 68, 76, 0.96);
+      color: rgba(255, 255, 255, 0.82);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+      font-family: var(--sans);
+      font-size: 12px;
+      line-height: 1.45;
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+
     .page {
       position: relative;
       z-index: 1;
-      min-height: 100vh;
+      min-height: calc(100vh - var(--fiction-header-height));
       display: flex;
       flex-direction: column;
     }
@@ -106,6 +132,7 @@
     }
 
     .brand-title {
+      display: block;
       font-family: var(--mono);
       font-size: 15px;
       font-weight: 700;
@@ -114,6 +141,7 @@
     }
 
     .brand-sub {
+      display: block;
       margin-top: 4px;
       font-family: var(--mono);
       font-size: 11px;
@@ -144,54 +172,133 @@
     }
 
     .hero {
-      width: min(920px, calc(100% - 32px));
-      margin: 68px auto 28px;
+      width: min(1040px, calc(100% - 32px));
+      margin: 56px auto 28px;
       display: grid;
-      place-items: center;
-      text-align: center;
+      grid-template-columns: 0.78fr 1.22fr;
+      align-items: center;
+      gap: 34px;
       transition: all 0.25s ease;
     }
 
     body.has-results .hero {
+      width: min(920px, calc(100% - 32px));
       margin: 12px auto 18px;
-      text-align: left;
-      place-items: stretch;
+      grid-template-columns: 1fr;
+    }
+
+    .hero-panel {
+      position: relative;
+      min-height: 340px;
+      padding: 30px 28px;
+      border: 1px solid rgba(160, 174, 192, 0.36);
+      border-radius: 26px;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(232, 240, 246, 0.58)),
+        repeating-linear-gradient(135deg, transparent 0 16px, rgba(65, 103, 131, 0.035) 16px 17px);
+      box-shadow: 0 22px 58px rgba(31, 41, 55, 0.09);
+      overflow: hidden;
+    }
+
+    .hero-panel::before {
+      content: "CASE FILE / PUBLIC WEB LAYER";
+      position: absolute;
+      top: 18px;
+      right: -42px;
+      width: 220px;
+      padding: 7px 0;
+      transform: rotate(36deg);
+      background: rgba(65, 103, 131, 0.12);
+      color: rgba(36, 70, 95, 0.68);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+      letter-spacing: 0.12em;
+    }
+
+    body.has-results .hero-panel {
+      display: none;
+    }
+
+    .hero-kicker {
+      margin: 0 0 14px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent-dark);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
     }
 
     .hero-title {
       margin: 0;
       font-family: var(--mono);
-      font-size: clamp(39px, 8vw, 78px);
+      font-size: clamp(38px, 6vw, 68px);
       line-height: 0.96;
       letter-spacing: -0.06em;
       color: #162435;
       text-shadow: 0 1px 0 #fff;
     }
 
-    body.has-results .hero-title {
-      display: none;
-    }
-
     .hero-copy {
-      margin: 17px auto 24px;
-      max-width: 680px;
+      margin: 22px 0 0;
+      max-width: 390px;
       color: var(--muted);
       font-size: 14px;
-      line-height: 1.85;
+      line-height: 1.9;
     }
 
-    body.has-results .hero-copy {
-      display: none;
+    .search-zone {
+      min-width: 0;
+    }
+
+    body.has-results .search-zone {
+      width: 100%;
+    }
+
+    .fiction-context-banner {
+      position: sticky;
+      top: var(--fiction-header-height);
+      z-index: 20;
+      width: min(780px, 100%);
+      margin: 0 0 14px;
+      padding: 9px 13px;
+      border: 1px solid var(--warning-line);
+      border-left: 4px solid var(--warning);
+      border-radius: 12px;
+      background: rgba(248, 238, 238, 0.94);
+      color: var(--warning);
+      font-size: 12px;
+      line-height: 1.6;
+      text-align: left;
+      box-shadow: 0 10px 24px rgba(80, 22, 22, 0.06);
+    }
+
+    .fiction-context-banner strong {
+      font-weight: 700;
     }
 
     .search-card {
+      position: relative;
       width: min(780px, 100%);
       padding: 16px;
       border: 1px solid rgba(160, 174, 192, 0.38);
       border-radius: 24px;
-      background: rgba(255, 255, 255, 0.88);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.90), rgba(249, 251, 253, 0.88)),
+        repeating-linear-gradient(90deg, transparent 0 22px, rgba(65, 103, 131, 0.025) 22px 23px);
       box-shadow: var(--shadow);
       backdrop-filter: blur(16px);
+    }
+
+    .search-card::before {
+      content: "archive query terminal";
+      display: inline-flex;
+      margin: 0 0 10px 3px;
+      color: #6b7f90;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
 
     body.has-results .search-card {
@@ -199,6 +306,10 @@
       padding: 10px;
       border-radius: 18px;
       box-shadow: 0 12px 35px rgba(31, 41, 55, 0.08);
+    }
+
+    body.has-results .search-card::before {
+      display: none;
     }
 
     .search-form {
@@ -223,6 +334,7 @@
       border-radius: 50%;
       transform: translateY(-50%);
       opacity: 0.75;
+      pointer-events: none;
     }
 
     .search-box-wrap::after {
@@ -236,6 +348,7 @@
       transform: rotate(45deg);
       transform-origin: left center;
       opacity: 0.75;
+      pointer-events: none;
     }
 
     input[type="search"] {
@@ -303,7 +416,7 @@
 
     .examples {
       width: min(780px, 100%);
-      margin: 20px auto 0;
+      margin: 18px 0 0;
       color: var(--muted);
       font-size: 13px;
       line-height: 1.7;
@@ -325,7 +438,7 @@
     .example-list {
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 8px;
       margin: 0;
       padding: 0;
@@ -335,7 +448,7 @@
     .example-button {
       border: 1px solid rgba(148, 163, 184, 0.42);
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.62);
+      background: rgba(255, 255, 255, 0.64);
       color: #526579;
       padding: 7px 11px;
       font: inherit;
@@ -521,16 +634,53 @@
       margin: 0 auto;
       padding: 22px 0 26px;
       color: var(--muted-2);
-      font-family: var(--mono);
+      font-family: var(--sans);
       font-size: 11px;
+      line-height: 1.8;
       text-align: center;
+    }
+
+    .footer span {
+      display: block;
     }
 
     .hidden {
       display: none !important;
     }
 
+    @media (max-width: 860px) {
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        margin-top: 34px;
+      }
+
+      .hero-panel {
+        min-height: auto;
+      }
+
+      .hero-copy {
+        max-width: none;
+      }
+
+      .fiction-context-banner,
+      .search-card,
+      .examples {
+        width: 100%;
+      }
+    }
+
     @media (max-width: 720px) {
+      :root {
+        --fiction-header-height: 44px;
+      }
+
+      .fiction-header {
+        min-height: var(--fiction-header-height);
+        padding: 7px 12px;
+        font-size: 11px;
+      }
+
       .topbar {
         width: min(100% - 24px, 1180px);
         padding-top: 16px;
@@ -551,13 +701,15 @@
       }
 
       .hero {
-        width: min(100% - 22px, 920px);
-        margin-top: 48px;
+        width: min(100% - 22px, 1040px);
+      }
+
+      .hero-title {
+        font-size: clamp(36px, 12vw, 58px);
       }
 
       .hero-copy {
         font-size: 13px;
-        margin-bottom: 18px;
       }
 
       .search-card {
@@ -579,10 +731,6 @@
       body.has-results .search-button {
         height: 50px;
         width: 100%;
-      }
-
-      .examples {
-        width: min(100% - 22px, 780px);
       }
 
       .example-list {
@@ -614,7 +762,12 @@
     }
   </style>
 </head>
+
 <body>
+  <div class="fiction-header">
+    このページは創作作品内の架空UIです。実在の検索サービス・企業・機関とは関係ありません。
+  </div>
+
   <div class="page">
     <header class="topbar">
       <a href="./" class="brand" aria-label="TEMPORAL SEARCH">
@@ -624,6 +777,7 @@
           <span class="brand-sub">Indexed web layer: 2026.04.17</span>
         </span>
       </a>
+
       <div class="status" aria-label="connection status">
         <strong>04.17 / read-only</strong>
         connected by SUZUKI
@@ -631,29 +785,49 @@
     </header>
 
     <main>
-      <section class="hero" aria-label="search">
-        <h1 class="hero-title">TEMPORAL<br />SEARCH</h1>
-        <p class="hero-copy">
-          2026年4月17日時点の公開Web領域だけを参照しています。<br />
-          病院名、人物名、学校名、記事タイトルを入力してください。
-        </p>
-
-        <div class="search-card">
-          <form class="search-form" id="searchForm" autocomplete="off">
-            <div class="search-box-wrap">
-              <input
-                id="searchInput"
-                type="search"
-                placeholder="病院名、人物名、学校名、記事タイトルを入力"
-                aria-label="検索語"
-                enterkeyhint="search"
-              />
-            </div>
-            <button class="search-button" type="submit">SEARCH 04.17</button>
-          </form>
+      <section class="hero" aria-label="record trace interface">
+        <div class="hero-panel">
+          <p class="hero-kicker">fictional archive interface</p>
+          <h1 class="hero-title">TEMPORAL<br />SEARCH</h1>
+          <p class="hero-copy">
+            2026年4月17日時点の公開Web領域だけを参照する、劇中用の記録探索インターフェースです。
+            病院名、人物名、学校名、記事タイトルを手がかりに、残された記録を辿ってください。
+          </p>
         </div>
 
-    
+        <div class="search-zone">
+          <div class="fiction-context-banner" role="note">
+            <strong>劇中検索UI：</strong>
+            これはARG作品内の架空検索画面です。一般検索サービスではなく、物語上の記録探索演出として作成されています。
+          </div>
+
+          <div class="search-card">
+            <form class="search-form" id="searchForm" autocomplete="off">
+              <div class="search-box-wrap">
+                <input
+                  id="searchInput"
+                  type="search"
+                  placeholder="病院名、人物名、学校名、記事タイトルを入力"
+                  aria-label="調査語"
+                  enterkeyhint="search"
+                />
+              </div>
+              <button class="search-button" type="submit">記録を辿る</button>
+            </form>
+          </div>
+
+          <div class="examples" aria-label="調査語の例">
+            <div class="examples-label">TRACE EXAMPLES</div>
+            <ul class="example-list">
+              <li><button class="example-button" type="button" data-query="城南記念総合病院">城南記念総合病院</button></li>
+              <li><button class="example-button" type="button" data-query="朝倉澪">朝倉澪</button></li>
+              <li><button class="example-button" type="button" data-query="成瀬栞">成瀬栞</button></li>
+              <li><button class="example-button" type="button" data-query="星浜学園">星浜学園</button></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       <section class="result-area" id="resultArea" aria-live="polite">
         <div class="meta-row">
           <div class="query-readout" id="queryReadout">query: —</div>
@@ -664,7 +838,8 @@
     </main>
 
     <footer class="footer">
-      This page is part of a fictional ARG.
+      <span>このページは創作作品に登場する架空UIです。実在の検索サービス・企業・団体・機関とは関係ありません。</span>
+      <span>人物・施設・風景等の画像はAI生成画像または加工画像を含みます。</span>
     </footer>
   </div>
 
@@ -673,70 +848,70 @@
       {
         title: "城南記念総合病院",
         url: "https://ryosukeucchi0112-boop.github.io/bordover-jonan.hospital/",
-        snippet: "浜松市中央区に位置する地域密着型の総合病院。院長は黒崎恒一郎。外科部長・藍沢晋作とともに開院したとされる。お知らせ欄には過去診療記録の整理や一部カルテの閲覧制限に関する案内が掲載されている。",
-        label: "public index",
-        keywords: "城南記念総合病院, 城南病院, 病院, 総合病院, 黒崎恒一郎, 黒崎, 院長, 藍沢晋作, 藍沢, 外科, 外科部長, カルテ, 診療記録, 過去診療記録, 閲覧制限, 浜松市, 城南"
+        snippet: "城南市に所在するとされる劇中の総合病院。院長は黒崎恒一郎。外科部長・藍沢晋作とともに開院したとされる。お知らせ欄には過去診療記録の整理や一部カルテの閲覧制限に関する案内が掲載されている。",
+        label: "fictional public index",
+        keywords: "城南記念総合病院, 城南病院, 病院, 総合病院, 黒崎恒一郎, 黒崎, 院長, 藍沢晋作, 藍沢, 外科, 外科部長, カルテ, 診療記録, 過去診療記録, 閲覧制限, 城南"
       },
       {
         title: "城南市の有名人特集 第1弾｜黒崎恒一郎",
         url: "https://ryosukeucchi0112-boop.github.io/Jonan-famous-person/",
-        snippet: "地域医療と教育の二つの分野で城南市を支える人物として、黒崎恒一郎を紹介する特集記事。城南記念総合病院の院長であり、私立星浜学園の理事長でもあることが記されている。",
-        label: "cached",
+        snippet: "地域医療と教育の二つの分野で城南市を支える人物として、黒崎恒一郎を紹介する劇中広報記事。城南記念総合病院の院長であり、私立星浜学園の理事長でもあることが記されている。",
+        label: "fictional cached record",
         keywords: "黒崎恒一郎, くろさきこういちろう, 黒崎, 城南市, 有名人, 人物紹介, 城南市の有名人, 城南まちだより, 城南記念総合病院, 院長, 私立星浜学園, 星浜学園, 理事長, 医療, 教育"
       },
       {
         title: "星浜学園高等部",
         url: "https://ryosukeucchi0112-boop.github.io/bordover-hoshihama.highschool/",
-        snippet: "1898年創立の私立高校。学校からのお知らせには「朝倉さんの転落事故について」「三浦新聞への対応について」などが掲載されている。理事長・黒崎恒一郎との関係を調べる導線になる。",
-        label: "public index",
-        keywords: "星浜学園, 星浜学園高等部, 私立星浜学園, 私立星浜学園高等部, 学校, 高校, 朝倉, 朝倉さん, 転落事故, 三浦新聞, 黒崎恒一郎, 理事長, Eclipse first, since 1898"
+        snippet: "劇中に登場する私立高校。学校からのお知らせには「朝倉さんの転落事故について」「三浦新聞への対応について」などが掲載されている。理事長・黒崎恒一郎との関係を調べる導線になる。",
+        label: "fictional public index",
+        keywords: "星浜学園, 星浜学園高等部, 私立星浜学園, 私立星浜学園高等部, 学校, 高校, 朝倉, 朝倉さん, 転落事故, 三浦新聞, 黒崎恒一郎, 理事長, Eclipse first"
       },
       {
         title: "三浦新聞｜地域のニュース",
         url: "https://ryosukeucchi0112-boop.github.io/miura.news/",
-        snippet: "地域の出来事を伝える地方ニュースサイト。私立星浜学園の女子生徒転落、成瀬栞の死亡事故、黒崎蓮司の甲子園出場など、事件に関係する複数の記事が掲載されている。",
-        label: "archived",
+        snippet: "劇中の地域ニュースサイト。私立星浜学園の女子生徒転落、成瀬栞の死亡事故、黒崎蓮司の甲子園出場など、事件に関係する複数の記事が掲載されている。",
+        label: "fictional archived record",
         keywords: "三浦新聞, 三浦, ニュース, 地域ニュース, 三浦さやか, 星浜学園, 城南記念総合病院, 朝倉澪, 成瀬栞, 黒崎蓮司, 転落, 点滴, 容体急変, 医療, 学校, 事件"
       },
       {
         title: "私立星浜学園の女子生徒が校内で転落、病院に搬送、未だ意識戻らず",
         url: "https://ryosukeucchi0112-boop.github.io/news-article-mio/index.html",
         snippet: "2026年4月10日、私立星浜学園高等部の女子生徒が校内の階段付近で倒れているのが見つかり、城南記念総合病院へ搬送された。搬送後も意識は戻っていないと報じられている。",
-        label: "temporal result",
+        label: "fictional temporal result",
         keywords: "朝倉澪, 澪, 朝倉, 私立星浜学園, 星浜学園, 女子生徒, 転落, 階段, 校内, 病院搬送, 意識戻らず, 城南記念総合病院, いじめ, 三浦さやか, 2026年4月10日"
       },
       {
         title: "女子高校生死亡、点滴後に容体急変　病院対応に疑問",
         url: "https://ryosukeucchi0112-boop.github.io/news-article-naruse/",
-        snippet: "2026年1月18日、私立星浜学園高等部に通っていた女子高校生・成瀬栞が、城南記念総合病院で点滴などの処置を受けた後に容体を急変させ死亡した件を報じる記事。",
-        label: "temporal result",
+        snippet: "2026年1月18日、私立星浜学園高等部に通っていた女子高校生・成瀬栞が、城南記念総合病院で点滴などの処置を受けた後に容体を急変させ死亡した件を報じる劇中記事。",
+        label: "fictional temporal result",
         keywords: "成瀬栞, 栞, 女子高校生死亡, 点滴, 容体急変, 病院対応, 城南記念総合病院, 私立星浜学園, 星浜学園, 医療, 三浦さやか, 2026年1月18日, 急変, 死亡事故"
       },
       {
         title: "私立星浜学園、16年ぶり甲子園出場　主将・黒崎蓮司「支えてくれた人たちに感謝」",
         url: "https://ryosukeucchi0112-boop.github.io/news-article-renji/",
-        snippet: "私立星浜学園高等部が春季県大会を制し、16年ぶりの甲子園出場を決めたことを伝える記事。主将として黒崎蓮司の名前が掲載されている。",
-        label: "cached",
+        snippet: "私立星浜学園高等部が春季県大会を制し、16年ぶりの甲子園出場を決めたことを伝える劇中記事。主将として黒崎蓮司の名前が掲載されている。",
+        label: "fictional cached record",
         keywords: "黒崎蓮司, 蓮司, 黒崎, 私立星浜学園, 星浜学園, 甲子園, 主将, 野球部, 春季県大会, 学校, 三浦新聞, 三浦さやか"
       },
-     {
-  title: "朝倉澪の日常｜朝倉澪の個人ブログ",
-  url: "https://ryosukeucchi0112-boop.github.io/mio-blog/",
-  snippet: "星浜学園に通う朝倉澪が書いていた個人ブログ。何気ない日常と、そのとき考えていたことの記録として残されている。事件の感情面と手がかりを辿る重要なページ。",
-  label: "public index",
-  keywords: "朝倉澪",
-  exactQueryOnly: ["朝倉澪"]
-},
+      {
+        title: "朝倉澪の日常｜朝倉澪の個人ブログ",
+        url: "https://ryosukeucchi0112-boop.github.io/mio-blog/",
+        snippet: "星浜学園に通う朝倉澪が書いていた劇中の個人ブログ。何気ない日常と、そのとき考えていたことの記録として残されている。事件の感情面と手がかりを辿る重要なページ。",
+        label: "fictional public index",
+        keywords: "朝倉澪",
+        exactQueryOnly: ["朝倉澪"]
+      },
       {
         title: "SUZUKI CHAT",
         url: "https://ryosukeucchi0112-boop.github.io/suzuki-chat/",
-        snippet: "朝倉澪とSUZUKIのやり取りが断片的に残されたチャットログ。04.17以前の記録として、澪が何を調べ、誰に助けを求めていたのかを辿る手がかりになる。",
-        label: "restricted cache",
+        snippet: "朝倉澪とSUZUKIのやり取りが断片的に残された劇中チャットログ。04.17以前の記録として、澪が何を調べ、誰に助けを求めていたのかを辿る手がかりになる。",
+        label: "fictional restricted cache",
         keywords: [
-    "https://ryosukeucchi0112-boop.github.io/suzuki-chat/",
-    "ryosukeucchi0112-boop.github.io/suzuki-chat/",
-    "suzuki-chat/"
-  ],
+          "https://ryosukeucchi0112-boop.github.io/suzuki-chat/",
+          "ryosukeucchi0112-boop.github.io/suzuki-chat/",
+          "suzuki-chat/"
+        ],
         directOnly: true
       }
     ];
@@ -771,6 +946,7 @@
     ];
 
     const $ = (selector) => document.querySelector(selector);
+
     const searchForm = $("#searchForm");
     const searchInput = $("#searchInput");
     const output = $("#output");
@@ -803,19 +979,24 @@
       return !EXCLUDED_URL_PARTS.some((part) => normalizedUrl.includes(normalizeText(part)));
     }
 
+    function flattenKeywords(keywords) {
+      if (Array.isArray(keywords)) return keywords.join(" ");
+      return String(keywords || "");
+    }
+
     function createHaystack(item) {
       return normalizeText([
         item.title,
         item.url,
         item.snippet,
-        item.keywords
+        flattenKeywords(item.keywords)
       ].join(" "));
     }
 
     function scoreItem(item, tokens, originalQuery) {
       const title = normalizeText(item.title);
       const snippet = normalizeText(item.snippet);
-      const keywords = normalizeText(item.keywords);
+      const keywords = normalizeText(flattenKeywords(item.keywords));
       const url = normalizeText(item.url);
       const haystack = createHaystack(item);
       const normalizedQuery = normalizeText(originalQuery);
@@ -835,8 +1016,13 @@
         if (url.includes(token)) score += 8;
       }
 
+      const keywordList = keywords
+        .split(",")
+        .map((value) => normalizeText(value))
+        .filter(Boolean);
+
       if (title === normalizedQuery) score += 70;
-      if (keywords.split(",").map((v) => normalizeText(v)).includes(normalizedQuery)) score += 60;
+      if (keywordList.includes(normalizedQuery)) score += 60;
       if (title.includes(normalizedQuery)) score += 40;
       if (keywords.includes(normalizedQuery)) score += 32;
 
@@ -847,34 +1033,33 @@
       return { score, matchedCount, allMatched };
     }
 
-   function searchIndex(query) {
-  const tokens = tokenize(query);
-  if (!tokens.length) return [];
+    function searchIndex(query) {
+      const tokens = tokenize(query);
+      if (!tokens.length) return [];
 
-  const normalizedQuery = normalizeText(query);
+      const normalizedQuery = normalizeText(query);
 
-  return SEARCH_INDEX
-    .filter((item) => isSafeUrl(item.url))
-    .filter((item) => {
-      // exactQueryOnly があるページは、指定語句と完全一致した時だけ検索対象にする
-      if (!item.exactQueryOnly) return true;
+      return SEARCH_INDEX
+        .filter((item) => isSafeUrl(item.url))
+        .filter((item) => {
+          if (!item.exactQueryOnly) return true;
 
-      return item.exactQueryOnly
-        .map((word) => normalizeText(word))
-        .includes(normalizedQuery);
-    })
-    .map((item) => {
-      const score = scoreItem(item, tokens, query);
-      return { ...item, ...score };
-    })
-    .filter((item) => item.matchedCount > 0)
-    .sort((a, b) => {
-      if (b.allMatched !== a.allMatched) return Number(b.allMatched) - Number(a.allMatched);
-      if (b.score !== a.score) return b.score - a.score;
-      return a.title.localeCompare(b.title, "ja");
-    })
-    .slice(0, 8);
-}
+          return item.exactQueryOnly
+            .map((word) => normalizeText(word))
+            .includes(normalizedQuery);
+        })
+        .map((item) => {
+          const score = scoreItem(item, tokens, query);
+          return { ...item, ...score };
+        })
+        .filter((item) => item.matchedCount > 0)
+        .sort((a, b) => {
+          if (b.allMatched !== a.allMatched) return Number(b.allMatched) - Number(a.allMatched);
+          if (b.score !== a.score) return b.score - a.score;
+          return a.title.localeCompare(b.title, "ja");
+        })
+        .slice(0, 8);
+    }
 
     function escapeHtml(value) {
       return String(value || "")
@@ -888,16 +1073,16 @@
     function setResultMode(query) {
       document.body.classList.add("has-results");
       queryReadout.textContent = `query: ${query || "—"}`;
-      indexStatus.textContent = "public index active";
+      indexStatus.textContent = "fictional public index active";
     }
 
     function showLoading() {
       output.innerHTML = `
         <div class="loading-panel">
-          <ul class="loading-lines" aria-label="search progress">
-            <li id="loadLine1">connecting to 04.17...</li>
-            <li id="loadLine2">restoring cached index...</li>
-            <li id="loadLine3">filtering public records...</li>
+          <ul class="loading-lines" aria-label="record trace progress">
+            <li id="loadLine1">connecting to 04.17 layer...</li>
+            <li id="loadLine2">restoring cached records...</li>
+            <li id="loadLine3">filtering fictional public index...</li>
           </ul>
         </div>
       `;
@@ -920,10 +1105,10 @@
     function renderBlocked() {
       output.innerHTML = `
         <div class="empty-panel blocked">
-          <h2 class="empty-title">No indexed result found.</h2>
+          <h2 class="empty-title">No indexed record found.</h2>
           <p class="empty-text">
             04.17時点の公開Web領域に一致する記録はありません。<br />
-            一部の記録は検索インデックスから除外されています。
+            一部の記録は、この劇中インデックスから除外されています。
           </p>
         </div>
       `;
@@ -933,14 +1118,14 @@
     function renderEmpty() {
       output.innerHTML = `
         <div class="empty-panel">
-          <h2 class="empty-title">No indexed result found.</h2>
+          <h2 class="empty-title">No indexed record found.</h2>
           <p class="empty-text">
             04.17時点の公開Web領域に一致する記録はありません。<br />
-            検索語を変えてください：病院名 / 人物名 / 学校名 / 記事タイトル
+            調査語を変えてください：病院名 / 人物名 / 学校名 / 記事タイトル
           </p>
         </div>
       `;
-      indexStatus.textContent = "no public result";
+      indexStatus.textContent = "no fictional public result";
     }
 
     function renderResults(results) {
@@ -954,7 +1139,7 @@
       `).join("");
 
       output.innerHTML = `<div class="result-list">${html}</div>`;
-      indexStatus.textContent = `${results.length} indexed result${results.length === 1 ? "" : "s"}`;
+      indexStatus.textContent = `${results.length} indexed record${results.length === 1 ? "" : "s"}`;
     }
 
     function updateQueryParameter(query) {
@@ -967,50 +1152,51 @@
       window.history.replaceState({}, "", url);
     }
 
-   function performSearch(query, options = {}) {
-  const rawQuery = String(query || "").trim();
-  if (!rawQuery) {
-    output.innerHTML = "";
-    document.body.classList.remove("has-results");
-    updateQueryParameter("");
-    return;
-  }
+    function findDirectOnlyMatch(rawQuery) {
+      const normalizedQuery = normalizeText(rawQuery);
 
-  searchInput.value = rawQuery;
-  setResultMode(rawQuery);
-  showLoading();
+      return SEARCH_INDEX.find((item) => {
+        if (!item.directOnly) return false;
 
-  // suzuki-chat はURL完全一致の時だけ検索結果に出す
-  const normalizedQuery = rawQuery.toLowerCase();
-  const directMatch = SEARCH_INDEX.find(item => {
-    if (!item.directOnly) return false;
+        const rawUrl = normalizeText(item.url);
+        const urlNoProtocol = rawUrl.replace(/^https?:\/\//, "");
+        const urlNoSlash = rawUrl.replace(/\/$/, "");
+        const urlNoProtocolNoSlash = urlNoProtocol.replace(/\/$/, "");
 
-    const url = item.url.toLowerCase();
-    const urlNoProtocol = url.replace("https://", "");
-    const urlNoSlash = url.replace(/\/$/, "");
-    const urlNoProtocolNoSlash = urlNoProtocol.replace(/\/$/, "");
-
-    return (
-      normalizedQuery === url ||
-      normalizedQuery === urlNoProtocol ||
-      normalizedQuery === urlNoSlash ||
-      normalizedQuery === urlNoProtocolNoSlash
-    );
-  });
-
-  if (directMatch) {
-    if (options.updateUrl !== false) {
-      updateQueryParameter(rawQuery);
+        return (
+          normalizedQuery === rawUrl ||
+          normalizedQuery === urlNoProtocol ||
+          normalizedQuery === urlNoSlash ||
+          normalizedQuery === urlNoProtocolNoSlash
+        );
+      });
     }
 
-    window.setTimeout(() => {
-      renderResults([directMatch]);
-    }, 900);
+    function performSearch(query, options = {}) {
+      const rawQuery = String(query || "").trim();
 
-    return;
-  }
+      if (!rawQuery) {
+        output.innerHTML = "";
+        document.body.classList.remove("has-results");
+        updateQueryParameter("");
+        return;
+      }
+
+      searchInput.value = rawQuery;
+      setResultMode(rawQuery);
+      showLoading();
+
       if (options.updateUrl !== false) {
         updateQueryParameter(rawQuery);
+      }
+
+      const directMatch = findDirectOnlyMatch(rawQuery);
+
+      if (directMatch) {
+        window.setTimeout(() => {
+          renderResults([directMatch]);
+        }, 900);
+        return;
       }
 
       window.setTimeout(() => {
